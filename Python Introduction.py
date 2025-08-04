@@ -38,7 +38,7 @@ print(site_name)
 Name = input("Enter your name: ")
 favorite_color = input("Enter your favorite color: ")
 print(f"Hello {Name}!, your favorite color is {favorite_color}.")
-
+##### ASSIGNMENT
 num1 = input("Enter a number: ")
 num2 = input("Enter another number: ")
 sum = int(num1) + int(num2)
