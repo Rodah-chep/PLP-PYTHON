@@ -1,0 +1,18 @@
+# A program that reads a file and writes a modified version to a new file
+with open("Python/text.txt", "r") as source_file:
+    content = source_file.readlines()    
+    modified_content = [line.lower() for line in content]  # Convert each line to lowercase    
+    with open("Python/lowercase_text.txt", "w") as dest_file:
+        dest_file.writelines(modified_content)
+        print("Lowercase file created successfully.")
+
+#Ask the user for a filename and handle the error if the file does not exist or cannot be read
+filename = input("Enter the filename: ")   
+try:
+    with open(filename, "r") as file:
+        content = file.read()
+        print(content)
+except FileNotFoundError:
+    print("File not found.")    
+except IOError:
+    print("Error reading the file.")
