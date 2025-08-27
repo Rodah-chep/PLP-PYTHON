@@ -1,0 +1,162 @@
+
+# smartphone.py
+
+class Smartphone:
+    
+    # class attribute (shared by all smartphones)
+    PLATFORM = "MobileOS"
+
+    def __init__(self, brand: str, model: str, storage_gb: int, ram_gb: int, battery_mah: int, os_version: str):
+        # public attributes
+        self.brand = brand
+        self.model = model
+
+        # "private" attributes (name-mangled) to demonstrate encapsulation
+        self.__storage_gb = None
+        self.__ram_gb = None
+        self.__battery_mah = None
+        self.__os_version = None
+
+        # initialize using setter validation
+        self.set_storage(storage_gb)
+        self.set_ram(ram_gb)
+        self.set_battery(battery_mah)
+        self.set_os_version(os_version)
+
+        # runtime state
+        self.is_on = False
+        self.apps_installed = []
+
+    # Encapsulation: getters and setters with validation
+    def get_storage(self) -> int:
+        return self.__storage_gb
+
+    def set_storage(self, gb: int):
+        if gb <= 0:
+            raise ValueError("Storage must be positive GB")
+        self.__storage_gb = int(gb)
+
+    def get_ram(self) -> int:
+        return self.__ram_gb
+
+    def set_ram(self, gb: int):
+        if gb <= 0:
+            raise ValueError("RAM must be positive GB")
+        self.__ram_gb = int(gb)
+
+    def get_battery(self) -> int:
+        return self.__battery_mah
+
+    def set_battery(self, mah: int):
+        if mah < 500:
+            raise ValueError("Battery should be at least 500 mAh")
+        self.__battery_mah = int(mah)
+
+    def get_os_version(self) -> str:
+        return self.__os_version
+
+    def set_os_version(self, version: str):
+        if not isinstance(version, str) or not version:
+            raise ValueError("OS version must be a non-empty string")
+        self.__os_version = version
+
+    # Methods to interact with the phone
+    def power_on(self):
+        if not self.is_on:
+            self.is_on = True
+            print(f"{self.brand} {self.model} powering on... Welcome to {self.PLATFORM} {self.get_os_version()}!")
+        else:
+            print("Phone is already on.")
+
+    def power_off(self):
+        if self.is_on:
+            self.is_on = False
+            print(f"{self.brand} {self.model} shutting down. Goodbye!")
+        else:
+            print("Phone is already off.")
+
+    def install_app(self, app_name: str, size_mb: int):
+        if size_mb <= 0:
+            raise ValueError("App size must be positive")
+        # naive storage check: assume 1 GB = 1024 MB
+        used_mb = sum(a['size_mb'] for a in self.apps_installed)
+        total_mb = self.get_storage() * 1024
+        if used_mb + size_mb > total_mb:
+            print("Not enough storage to install the app.")
+            return
+        self.apps_installed.append({"name": app_name, "size_mb": size_mb})
+        print(f"Installed {app_name} ({size_mb} MB).")
+
+    def uninstall_app(self, app_name: str):
+        before = len(self.apps_installed)
+        self.apps_installed = [a for a in self.apps_installed if a['name'] != app_name]
+        after = len(self.apps_installed)
+        if before == after:
+            print(f"No app named {app_name} found.")
+        else:
+            print(f"Uninstalled {app_name}.")
+
+    def battery_status(self):
+        print(f"Battery: {self.get_battery()} mAh")
+
+    def info(self):
+        print(f"{self.brand} {self.model} - Storage: {self.get_storage()} GB, RAM: {self.get_ram()} GB, Battery: {self.get_battery()} mAh, OS: {self.get_os_version()}")
+        print(f"Powered on: {self.is_on}, Apps installed: {[a['name'] for a in self.apps_installed]}")
+
+# Inheritance layer: create a flagship phone and a budget phone to explore polymorphism/encapsulation
+class FlagshipPhone(Smartphone):
+    """
+    FlagshipPhone adds camera quality and wireless charging features.
+    Demonstrates inheritance and method overriding.
+    """
+    def __init__(self, brand, model, storage_gb, ram_gb, battery_mah, os_version, camera_mp: int, has_wireless_charging: bool):
+        super().__init__(brand, model, storage_gb, ram_gb, battery_mah, os_version)
+        self.camera_mp = camera_mp
+        self.has_wireless_charging = has_wireless_charging
+
+    def info(self):
+        # Override to include flagship-specific info
+        super().info()
+        print(f"Camera: {self.camera_mp} MP, Wireless charging: {self.has_wireless_charging}")
+
+    def take_photo(self):
+        print(f"{self.brand} {self.model} takes a {self.camera_mp} MP photo. Stunning!")
+
+class BudgetPhone(Smartphone):
+    """
+    BudgetPhone emphasizes battery life and may limit certain features.
+    Demonstrates inheritance with different behavior (polymorphism).
+    """
+    def __init__(self, brand, model, storage_gb, ram_gb, battery_mah, os_version, extended_battery_mode: bool = False):
+        super().__init__(brand, model, storage_gb, ram_gb, battery_mah, os_version)
+        self.extended_battery_mode = extended_battery_mode
+
+    def battery_status(self):
+        # Override: show extended battery mode effect
+        base = self.get_battery()
+        if self.extended_battery_mode:
+            print(f"Battery: {base} mAh (Extended mode active — power saving ON)")
+        else:
+            print(f"Battery: {base} mAh")
+
+    def enable_extended_battery(self):
+        self.extended_battery_mode = True
+        print("Extended battery mode enabled. Background activity restricted.")
+
+# Example usage
+if __name__ == "__main__":
+    fp = FlagshipPhone("NovaTech", "Apex", 256, 12, 4500, "5.1", camera_mp=108, has_wireless_charging=True)
+    bp = BudgetPhone("EconoPhone", "ValueX", 64, 3, 5000, "3.0", extended_battery_mode=False)
+
+    fp.power_on()
+    fp.install_app("PhotoPro", 200)
+    fp.take_photo()
+    fp.info()
+    fp.power_off()
+
+    bp.power_on()
+    bp.battery_status()
+    bp.enable_extended_battery()
+    bp.battery_status()
+    bp.info()
+    bp.power_off()
